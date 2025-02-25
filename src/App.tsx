@@ -1,26 +1,83 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import HomePage from './pages/HomePage';
+import { UserRole } from './types/auth';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Публичные маршруты */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/" element={<HomePage />} />
+          
+          {/* Защищенные маршруты */}
+          <Route 
+            path="/plants" 
+            element={
+              <ProtectedRoute>
+                <div>Страница растений</div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/map" 
+            element={
+              <ProtectedRoute>
+                <div>Карта сада</div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Маршруты с проверкой роли пользователя */}
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute requiredRoles={[UserRole.Admin]}>
+                <div>Страница администратора</div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/plants/add" 
+            element={
+              <ProtectedRoute requiredRoles={[UserRole.Admin, UserRole.Botanist]}>
+                <div>Добавление растения</div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Страница "Доступ запрещен" */}
+          <Route 
+            path="/forbidden" 
+            element={
+              <div className="min-h-screen flex flex-col justify-center items-center">
+                <h1 className="text-3xl font-bold text-red-500">Доступ запрещен</h1>
+                <p className="mt-4 text-gray-600">У вас нет необходимых прав для доступа к этой странице.</p>
+                <button 
+                  onClick={() => window.history.back()} 
+                  className="mt-6 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
+                >
+                  Вернуться назад
+                </button>
+              </div>
+            } 
+          />
+          
+          {/* Перенаправление для несуществующих маршрутов */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
-}
+};
 
 export default App;
