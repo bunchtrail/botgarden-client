@@ -1,38 +1,121 @@
+/* Основные стили в стиле Apple */
 .App {
   text-align: center;
+  font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
 }
 
+/* Стили для логотипа */
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
+/* Анимация пульсации в стиле Apple */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
+/* Для устройств с настройками предпочтения анимации */
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: pulse 3s infinite alternate;
+  }
+}
+
+/* Стиль для заголовка приложения */
 .App-header {
-  background-color: #282c34;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  background: linear-gradient(135deg, #F5F5F7 0%, #FFFFFF 100%);
+  color: #1D1D1F;
+  padding: 40px 20px;
 }
 
+/* Ссылки в стиле Apple */
 .App-link {
-  color: #61dafb;
+  color: #007AFF;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.App-link:hover {
+  color: #0062CC;
+}
+
+.App-link:after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: #007AFF;
+  transform: scaleX(0);
+  transform-origin: bottom right;
+  transition: transform 0.3s ease;
+}
+
+.App-link:hover:after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Карточки в стиле Apple */
+.apple-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.apple-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Кнопки в стиле Apple */
+.apple-button {
+  background-color: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.apple-button:hover {
+  background-color: #0062CC;
+  transform: translateY(-2px);
+}
+
+.apple-button-secondary {
+  background-color: #F5F5F7;
+  color: #1D1D1F;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.apple-button-secondary:hover {
+  background-color: #E5E5EA;
 }

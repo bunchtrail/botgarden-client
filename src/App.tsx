@@ -1,82 +1,153 @@
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/auth/ProtectedRoute';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import Navigation from './components/Navigation';
+import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
-import { UserRole } from './types/auth';
+import MapPage from './pages/MapPage';
+import PlantFormPage from './pages/PlantFormPage';
+import PlantsPage from './pages/PlantsPage';
+import ReportsPage from './pages/ReportsPage';
+
+// Создаем тему в стиле Apple для приложения
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#007AFF', // Синий цвет Apple
+      light: '#5AC8FA',
+      dark: '#0062CC',
+    },
+    secondary: {
+      main: '#FF2D55', // Розовый цвет Apple
+      light: '#FF5E3A',
+      dark: '#CC2347',
+    },
+    background: {
+      default: '#FFFFFF',
+      paper: '#F5F5F7',
+    },
+    text: {
+      primary: '#1D1D1F',
+      secondary: '#86868B',
+    },
+    error: {
+      main: '#FF3B30', // Красный Apple
+    },
+    warning: {
+      main: '#FF9500', // Оранжевый Apple
+    },
+    info: {
+      main: '#5AC8FA', // Голубой Apple
+    },
+    success: {
+      main: '#34C759', // Зеленый Apple
+    },
+  },
+  typography: {
+    fontFamily:
+      '"SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif',
+    h1: {
+      fontWeight: 600,
+      fontSize: '2.5rem',
+    },
+    h2: {
+      fontWeight: 600,
+      fontSize: '2rem',
+    },
+    h3: {
+      fontWeight: 600,
+      fontSize: '1.75rem',
+    },
+    h4: {
+      fontWeight: 600,
+      fontSize: '1.5rem',
+    },
+    h5: {
+      fontWeight: 600,
+      fontSize: '1.25rem',
+    },
+    h6: {
+      fontWeight: 600,
+      fontSize: '1rem',
+    },
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.5,
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 500,
+    },
+  },
+  shape: {
+    borderRadius: 10,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+          padding: '10px 20px',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+          },
+        },
+        contained: {
+          '&:hover': {
+            opacity: 0.9,
+          },
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          boxShadow: 'none',
+          backdropFilter: 'blur(20px)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+          color: '#1D1D1F',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+          borderRadius: 16,
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 10,
+          },
+        },
+      },
+    },
+  },
+});
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Router>
+        <Navigation />
         <Routes>
-          {/* Публичные маршруты */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/" element={<HomePage />} />
-          
-          {/* Защищенные маршруты */}
-          <Route 
-            path="/plants" 
-            element={
-              <ProtectedRoute>
-                <div>Страница растений</div>
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/map" 
-            element={
-              <ProtectedRoute>
-                <div>Карта сада</div>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Маршруты с проверкой роли пользователя */}
-          <Route 
-            path="/admin" 
-            element={
-              <ProtectedRoute requiredRoles={[UserRole.Admin]}>
-                <div>Страница администратора</div>
-              </ProtectedRoute>
-            } 
-          />
-          
-          <Route 
-            path="/plants/add" 
-            element={
-              <ProtectedRoute requiredRoles={[UserRole.Admin, UserRole.Botanist]}>
-                <div>Добавление растения</div>
-              </ProtectedRoute>
-            } 
-          />
-          
-          {/* Страница "Доступ запрещен" */}
-          <Route 
-            path="/forbidden" 
-            element={
-              <div className="min-h-screen flex flex-col justify-center items-center">
-                <h1 className="text-3xl font-bold text-red-500">Доступ запрещен</h1>
-                <p className="mt-4 text-gray-600">У вас нет необходимых прав для доступа к этой странице.</p>
-                <button 
-                  onClick={() => window.history.back()} 
-                  className="mt-6 px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700"
-                >
-                  Вернуться назад
-                </button>
-              </div>
-            } 
-          />
-          
-          {/* Перенаправление для несуществующих маршрутов */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path='/' element={<HomePage />} />
+          <Route path='/plants' element={<PlantsPage />} />
+          <Route path='/plants/new' element={<PlantFormPage />} />
+          <Route path='/plants/:id/edit' element={<PlantFormPage />} />
+          <Route path='/reports' element={<ReportsPage />} />
+          <Route path='/admin' element={<AdminPage />} />
+          <Route path='/map' element={<MapPage />} />
         </Routes>
       </Router>
-    </AuthProvider>
+    </ThemeProvider>
   );
 };
 
