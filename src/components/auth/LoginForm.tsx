@@ -45,7 +45,7 @@ const LoginForm: React.FC = () => {
       <div className='flex flex-col items-center mb-6'>
         <PiPlantFill className='text-primary-600 text-5xl mb-2' />
         <h2 className='text-2xl font-serif font-bold text-center text-gray-800'>
-          Вход в Ботанический Сад
+          Вход в Ботанический Сад ВятГУ
         </h2>
         <p className='text-center text-gray-600 mt-1'>
           Введите ваши данные для входа в систему

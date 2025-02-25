@@ -8,18 +8,16 @@ const LoginPage: React.FC = () => {
 
   // Если пользователь уже авторизован, перенаправляем на главную страницу
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to='/' replace />;
   }
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <LoginForm />
-        </div>
+    <div className='min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8'>
+      <div className='sm:mx-auto sm:w-full sm:max-w-md'>
+        <LoginForm />
       </div>
     </div>
   );
 };
 
-export default LoginPage; 
+export default LoginPage;

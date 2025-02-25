@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
             <Link to='/' className='flex items-center'>
               <PiPlantFill className='h-8 w-8 text-primary-600' />
               <span className='ml-2 text-xl font-serif font-semibold text-gray-900'>
-                Ботанический Сад
+                Ботанический Сад ВятГУ
               </span>
             </Link>
             <p className='mt-4 text-sm text-gray-600'>
@@ -116,19 +116,19 @@ const Footer: React.FC = () => {
               <li className='flex items-start'>
                 <FiMapPin className='mt-1 h-5 w-5 text-gray-500' />
                 <span className='ml-2 text-sm text-gray-600'>
-                  ул. Ботаническая, 1, г. Москва, 123456
+                  ул. Карла Маркса, 95, Киров, Кировская обл., 610017
                 </span>
               </li>
               <li className='flex items-center'>
                 <FiPhone className='h-5 w-5 text-gray-500' />
                 <span className='ml-2 text-sm text-gray-600'>
-                  +7 (495) 123-45-67
+                  8 (833) 274-24-33
                 </span>
               </li>
               <li className='flex items-center'>
                 <FiMail className='h-5 w-5 text-gray-500' />
                 <span className='ml-2 text-sm text-gray-600'>
-                  info@botgarden.ru
+                  botgarden@vyatsu.ru
                 </span>
               </li>
               <li className='flex items-center mt-4 space-x-4'>
@@ -158,7 +158,7 @@ const Footer: React.FC = () => {
         {/* Копирайт */}
         <div className='mt-12 border-t border-gray-200 pt-8'>
           <p className='text-center text-sm text-gray-500'>
-            © {currentYear} Ботанический Сад. Все права защищены.
+            © {currentYear} Ботанический Сад ВятГУ. Все права защищены.
           </p>
           <div className='mt-4 flex justify-center space-x-6'>
             <Link

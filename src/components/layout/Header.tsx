@@ -65,7 +65,7 @@ const Header: React.FC = () => {
             <Link to='/' className='flex items-center'>
               <PiPlantFill className='h-8 w-8 text-primary-600' />
               <span className='ml-2 text-xl font-serif font-semibold text-gray-900'>
-                Ботанический Сад
+                Ботанический Сад ВятГУ
               </span>
             </Link>
           </div>
