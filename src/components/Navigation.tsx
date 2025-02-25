@@ -3,6 +3,7 @@ import ForestIcon from '@mui/icons-material/Forest';
 import HomeIcon from '@mui/icons-material/Home';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MapIcon from '@mui/icons-material/Map';
 import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SpaIcon from '@mui/icons-material/Spa';
@@ -61,6 +62,7 @@ const Navigation: React.FC = () => {
       icon: <SpaIcon />,
       path: '/plants?department=floriculture',
     },
+    { text: 'Карта', icon: <MapIcon />, path: '/map' },
     { text: 'Отчеты', icon: <AssessmentIcon />, path: '/reports' },
     { text: 'Администрирование', icon: <SettingsIcon />, path: '/admin' },
   ];
@@ -72,8 +74,12 @@ const Navigation: React.FC = () => {
       return location.pathname === '/' && !location.search;
     }
 
-    // Для страницы отчетов и администрирования - точное совпадение пути
-    if (itemPath === '/reports' || itemPath === '/admin') {
+    // Для страницы отчетов, администрирования и карты - точное совпадение пути
+    if (
+      itemPath === '/reports' ||
+      itemPath === '/admin' ||
+      itemPath === '/map'
+    ) {
       return location.pathname === itemPath;
     }
 
@@ -125,7 +131,12 @@ const Navigation: React.FC = () => {
 
   return (
     <>
-      <AppBar position='sticky' color='default' elevation={1}>
+      <AppBar
+        position='sticky'
+        color='default'
+        elevation={1}
+        sx={{ bgcolor: '#ffffff' }}
+      >
         <Toolbar>
           <IconButton
             edge='start'
@@ -163,6 +174,7 @@ const Navigation: React.FC = () => {
         open={drawerOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
+        PaperProps={{ sx: { bgcolor: '#ffffff' } }}
       >
         {drawerContent}
       </Drawer>

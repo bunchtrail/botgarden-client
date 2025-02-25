@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './assets/appleStyles.css';
 import './index.css';
+import 'leaflet/dist/leaflet.css';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(

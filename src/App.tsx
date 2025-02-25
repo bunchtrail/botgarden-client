@@ -4,6 +4,7 @@ import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import AdminPage from './pages/AdminPage';
 import HomePage from './pages/HomePage';
+import MapPage from './pages/MapPage';
 import PlantFormPage from './pages/PlantFormPage';
 import PlantsPage from './pages/PlantsPage';
 import ReportsPage from './pages/ReportsPage';
@@ -143,6 +144,7 @@ const App: React.FC = () => {
           <Route path='/plants/:id/edit' element={<PlantFormPage />} />
           <Route path='/reports' element={<ReportsPage />} />
           <Route path='/admin' element={<AdminPage />} />
+          <Route path='/map' element={<MapPage />} />
         </Routes>
       </Router>
     </ThemeProvider>
