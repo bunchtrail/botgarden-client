@@ -1,46 +1,33 @@
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
-// Базовый URL API
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Создаем экземпляр axios с базовой конфигурацией
-const apiClient: AxiosInstance = axios.create({
-  baseURL: API_URL,
+// Создаем экземпляр axios с базовыми настройками
+const api = axios.create({
+  baseURL: 'http://localhost:5000/api', // Предполагаемый URL API
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
-// Интерцептор запросов - добавляет токен из localStorage
-apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('token');
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
+// Добавляем перехватчик для обработки ошибок
+api.interceptors.response.use(
+  (response) => response,
   (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Интерцептор ответов - обрабатывает ошибки
-apiClient.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  async (error) => {
-    const originalRequest = error.config;
-    
-    // Если ошибка 401 (Unauthorized) и это не повторный запрос
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      // Очищаем токен и перенаправляем на страницу входа
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    // Обработка ошибок
+    if (error.response) {
+      console.error('Ошибка API:', error.response.data);
+      
+      // Обработка ошибок аутентификации
+      if (error.response.status === 401) {
+        // Редирект на страницу входа или другая логика
+        console.error('Необходима аутентификация');
+      }
+    } else if (error.request) {
+      console.error('Сервер не отвечает:', error.request);
+    } else {
+      console.error('Ошибка запроса:', error.message);
     }
-    
     return Promise.reject(error);
   }
 );
 
-export default apiClient; 
+export default api; 
