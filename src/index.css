@@ -23,6 +23,12 @@ html, body {
   scroll-behavior: smooth;
 }
 
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Анимации и переходы в стиле Apple */
 a, button, input, select, textarea {
   transition: all 0.2s ease-out;

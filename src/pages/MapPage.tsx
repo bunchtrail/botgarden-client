@@ -1,23 +1,28 @@
 import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import LayersIcon from '@mui/icons-material/Layers';
 import LocalFloristIcon from '@mui/icons-material/LocalFlorist';
 import PolylineIcon from '@mui/icons-material/Polyline';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import UploadIcon from '@mui/icons-material/Upload';
 import {
-  Alert,
   Box,
   Button,
+  Chip,
   Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
-  Input,
+  Divider,
+  FormControlLabel,
   Paper,
+  Snackbar,
   Stack,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -69,6 +74,15 @@ interface Area {
   description?: string;
 }
 
+// Добавляем интерфейс для слоев карты
+interface MapLayer {
+  id: string;
+  name: string;
+  visible: boolean;
+  color: string;
+  icon: React.ReactNode;
+}
+
 // Демо-данные растений
 const initialPlants: Plant[] = [
   {
@@ -114,6 +128,38 @@ const initialAreas: Area[] = [
       [400, 300],
     ],
     description: 'Коллекция роз различных сортов',
+  },
+];
+
+// Начальные слои карты
+const initialLayers: MapLayer[] = [
+  {
+    id: 'trees',
+    name: 'Деревья',
+    visible: true,
+    color: '#34C759',
+    icon: <LocalFloristIcon />,
+  },
+  {
+    id: 'flowers',
+    name: 'Цветы',
+    visible: true,
+    color: '#FF2D55',
+    icon: <LocalFloristIcon />,
+  },
+  {
+    id: 'areas',
+    name: 'Области',
+    visible: true,
+    color: '#007AFF',
+    icon: <PolylineIcon />,
+  },
+  {
+    id: 'buildings',
+    name: 'Здания',
+    visible: true,
+    color: '#8E8E93',
+    icon: <LocalFloristIcon />,
   },
 ];
 
@@ -320,6 +366,30 @@ const MapControls: React.FC<{
   );
 };
 
+// Функция для создания пользовательской иконки маркера
+const createCustomIcon = (species: string) => {
+  // Определяем emoji в зависимости от вида растения
+  let emoji = '🌱'; // По умолчанию
+
+  // Простая логика определения emoji на основе названия вида
+  if (species.toLowerCase().includes('quercus')) {
+    emoji = '🌳'; // Дуб
+  } else if (species.toLowerCase().includes('pinus')) {
+    emoji = '🌲'; // Сосна
+  } else if (species.toLowerCase().includes('rosa')) {
+    emoji = '🌹'; // Роза
+  } else if (species.toLowerCase().includes('tulipa')) {
+    emoji = '🌷'; // Тюльпан
+  }
+
+  return L.divIcon({
+    className: 'plant-marker',
+    html: `<div style="font-size: 24px;">${emoji}</div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+  });
+};
+
 const MapPage: React.FC = () => {
   const [customImage, setCustomImage] = useState<string | null>(null);
   const [imageWidth, setImageWidth] = useState(800);
@@ -335,6 +405,9 @@ const MapPage: React.FC = () => {
   const [showAreaDialog, setShowAreaDialog] = useState(false);
   const [tempPlant, setTempPlant] = useState<Partial<Plant>>({});
   const [tempArea, setTempArea] = useState<Partial<Area>>({});
+  const [layers, setLayers] = useState<MapLayer[]>(initialLayers);
+  const [showLegend, setShowLegend] = useState(true);
+  const [notification, setNotification] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
@@ -509,225 +582,267 @@ const MapPage: React.FC = () => {
     }
   }, [mapMode]);
 
+  // Обработчик ошибок загрузки изображения
+  const handleImageError = () => {
+    setError(
+      'Не удалось загрузить схему. Проверьте формат файла или попробуйте другое изображение.'
+    );
+  };
+
+  // Показать уведомление
+  const showNotification = (message: string) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000);
+  };
+
+  // Обработчик переключения слоев
+  const handleLayerToggle = (layerId: string) => {
+    setLayers(
+      layers.map((layer) =>
+        layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+      )
+    );
+  };
+
   return (
     <Container
       maxWidth='xl'
       sx={{
-        py: 2,
+        py: 4,
         height: 'calc(100vh - 64px)',
         display: 'flex',
         flexDirection: 'column',
       }}
     >
-      <Typography
-        variant='h4'
-        component='h1'
-        sx={{ mb: 2, textAlign: 'center' }}
-      >
-        Карта ботанического сада
-      </Typography>
-
-      <Paper
-        elevation={0}
-        sx={{
-          p: { xs: 2, sm: 2 },
-          mb: 2,
-          border: '1px solid rgba(0, 0, 0, 0.1)',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Box
-          sx={{
-            mb: 2,
-            display: 'flex',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography variant='h6' sx={{ mb: 1 }}>
-              Схема ботанического сада
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <FormControl>
-                <Input
-                  type='file'
-                  inputRef={fileInputRef}
-                  onChange={handleImageUpload}
-                  sx={{ display: 'none' }}
-                  id='map-upload-input'
-                  inputProps={{ accept: 'image/*' }}
-                />
-                <Button
-                  variant='contained'
-                  component='label'
-                  htmlFor='map-upload-input'
-                  startIcon={<UploadIcon />}
-                  size='small'
-                  sx={{
-                    borderRadius: '20px',
-                  }}
-                >
-                  Загрузить схему
-                </Button>
-              </FormControl>
-              <Button
-                variant='outlined'
-                color='error'
-                startIcon={<DeleteIcon />}
-                onClick={resetToDefault}
-                size='small'
-                sx={{
-                  borderRadius: '20px',
-                }}
-              >
-                Сбросить
-              </Button>
-            </Box>
-          </Box>
-
-          <Box>
-            <Typography variant='h6' sx={{ mb: 1 }}>
-              Режимы работы с картой
-            </Typography>
-            <MapControls
-              mode={mapMode}
-              setMode={setMapMode}
-              onSave={handleSave}
-            />
-          </Box>
-        </Box>
-
-        {error && (
-          <Alert severity='error' sx={{ mb: 2, maxWidth: '600px' }}>
-            {error}
-          </Alert>
-        )}
-
-        <Box
-          sx={{
-            flexGrow: 1,
-            width: '100%',
-            border: '1px solid #eee',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-          }}
-        >
-          <MapContainer
-            center={[imageHeight / 2, imageWidth / 2]}
-            zoom={0}
-            style={{ height: '100%', width: '100%' }}
-            crs={CRS.Simple}
-            minZoom={-2}
-            maxZoom={2}
-            zoomControl={true}
-            attributionControl={false}
-          >
-            <ImageOverlay bounds={bounds} url={customImage || defaultImage} />
-            <MapUpdater bounds={bounds} />
-            <MapEventHandler
-              mode={mapMode}
-              onPlantAdd={handlePlantAdd}
-              onPlantSelect={handlePlantSelect}
-              onAreaPointAdd={handleAreaPointAdd}
-              onAreaSelect={handleAreaSelect}
-            />
-
-            {/* Маркеры точек интереса */}
-            {points.map((point, index) => (
-              <Marker key={`poi-${index}`} position={point.position}>
-                <Popup>
-                  <Typography variant='subtitle2'>{point.name}</Typography>
-                  <Typography variant='body2'>{point.description}</Typography>
-                </Popup>
-              </Marker>
-            ))}
-
-            {/* Маркеры растений */}
-            {plants.map((plant) => (
-              <Marker
-                key={plant.id}
-                position={plant.position}
-                eventHandlers={{
-                  click: () => handlePlantSelect(plant.id),
-                }}
-                icon={L.divIcon({
-                  className: 'plant-marker',
-                  html: `<div style="color: green; font-size: 24px;">🌱</div>`,
-                  iconSize: [24, 24],
-                  iconAnchor: [12, 12],
-                })}
-              >
-                <Popup>
-                  <Typography variant='subtitle2'>{plant.name}</Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {plant.species}
-                  </Typography>
-                  {plant.description && (
-                    <Typography variant='body2'>{plant.description}</Typography>
-                  )}
-                </Popup>
-              </Marker>
-            ))}
-
-            {/* Области */}
-            {areas.map((area) => (
-              <Polygon
-                key={area.id}
-                positions={area.positions}
-                pathOptions={{
-                  color: area.color,
-                  fillOpacity: 0.3,
-                  weight: 2,
-                }}
-                eventHandlers={{
-                  click: () => handleAreaSelect(area.id),
-                }}
-              >
-                <Popup>
-                  <Typography variant='subtitle2'>{area.name}</Typography>
-                  <Typography variant='body2' color='text.secondary'>
-                    {area.type}
-                  </Typography>
-                  {area.description && (
-                    <Typography variant='body2'>{area.description}</Typography>
-                  )}
-                </Popup>
-              </Polygon>
-            ))}
-
-            {/* Отображение создаваемой области */}
-            {newAreaPoints.length > 0 && (
-              <Polygon
-                positions={newAreaPoints}
-                pathOptions={{
-                  color: '#007AFF',
-                  fillOpacity: 0.2,
-                  weight: 2,
-                  dashArray: '5, 5',
-                }}
-              />
-            )}
-          </MapContainer>
-        </Box>
-
-        <Typography
-          variant='caption'
-          color='text.secondary'
-          sx={{ display: 'block', mt: 1, textAlign: 'center' }}
-        >
-          * Карта схематична и может не отражать точное расположение объектов.
-          Для более точной информации обратитесь к администрации.
+      <Box sx={{ mb: 4 }}>
+        <Typography variant='h4' component='h1' sx={{ mb: 2 }}>
+          Карта ботанического сада
         </Typography>
+        <Typography variant='body1' color='text.secondary' sx={{ mb: 3 }}>
+          Интерактивная карта для управления расположением растений и областей
+        </Typography>
+      </Box>
+
+      {/* Панель инструментов */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Stack direction='row' spacing={2} alignItems='center'>
+          <MapControls
+            mode={mapMode}
+            setMode={setMapMode}
+            onSave={handleSave}
+          />
+
+          <Box sx={{ flexGrow: 1 }} />
+
+          <Tooltip title='Управление слоями'>
+            <Button
+              variant='outlined'
+              startIcon={<LayersIcon />}
+              onClick={() => setShowLegend(!showLegend)}
+            >
+              Слои
+            </Button>
+          </Tooltip>
+
+          <Tooltip title='Загрузить схему'>
+            <Button
+              variant='contained'
+              component='label'
+              startIcon={<UploadIcon />}
+            >
+              Загрузить схему
+              <input
+                type='file'
+                hidden
+                accept='image/*'
+                onChange={handleImageUpload}
+              />
+            </Button>
+          </Tooltip>
+        </Stack>
       </Paper>
 
-      {/* Диалог для добавления/редактирования растения */}
+      {/* Контейнер для карты и легенды */}
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        {/* Легенда */}
+        {showLegend && (
+          <Paper
+            sx={{
+              p: 2,
+              width: 250,
+              height: 'fit-content',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 1,
+            }}
+          >
+            <Typography variant='h6' sx={{ mb: 1 }}>
+              Слои карты
+            </Typography>
+            {layers.map((layer) => (
+              <FormControlLabel
+                key={layer.id}
+                control={
+                  <Switch
+                    checked={layer.visible}
+                    onChange={() => handleLayerToggle(layer.id)}
+                    sx={{
+                      '& .MuiSwitch-track': {
+                        backgroundColor: layer.color + '40',
+                      },
+                      '& .Mui-checked': {
+                        '& .MuiSwitch-thumb': {
+                          backgroundColor: layer.color,
+                        },
+                        '& + .MuiSwitch-track': {
+                          backgroundColor: layer.color + '80',
+                        },
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {layer.icon}
+                    <Typography>{layer.name}</Typography>
+                  </Box>
+                }
+              />
+            ))}
+            <Divider sx={{ my: 1 }} />
+            <Typography variant='body2' color='text.secondary'>
+              Используйте переключатели для отображения или скрытия элементов на
+              карте
+            </Typography>
+          </Paper>
+        )}
+
+        {/* Карта */}
+        <Paper
+          sx={{
+            flexGrow: 1,
+            height: 600,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          {error ? (
+            <Box
+              sx={{
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 3,
+                textAlign: 'center',
+              }}
+            >
+              <ErrorOutlineIcon
+                sx={{ fontSize: 48, color: 'error.main', mb: 2 }}
+              />
+              <Typography variant='h6' color='error' gutterBottom>
+                Ошибка загрузки схемы
+              </Typography>
+              <Typography color='text.secondary' sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+              <Button
+                variant='contained'
+                onClick={resetToDefault}
+                startIcon={<RefreshIcon />}
+              >
+                Восстановить схему по умолчанию
+              </Button>
+            </Box>
+          ) : (
+            <MapContainer
+              crs={CRS.Simple}
+              center={[250, 250]}
+              zoom={0}
+              style={{ height: '100%' }}
+              maxBounds={bounds}
+              minZoom={-2}
+              maxZoom={2}
+            >
+              <ImageOverlay
+                url={customImage || defaultImage}
+                bounds={bounds}
+                eventHandlers={{
+                  error: handleImageError,
+                }}
+              />
+              <MapUpdater bounds={bounds} />
+              <MapEventHandler
+                mode={mapMode}
+                onPlantAdd={handlePlantAdd}
+                onPlantSelect={handlePlantSelect}
+                onAreaPointAdd={handleAreaPointAdd}
+                onAreaSelect={handleAreaSelect}
+              />
+
+              {/* Отображение растений */}
+              {layers.find((l) => l.id === 'trees')?.visible &&
+                plants.map((plant) => (
+                  <Marker
+                    key={plant.id}
+                    position={plant.position}
+                    icon={createCustomIcon(plant.species)}
+                  >
+                    <Popup>
+                      <Box sx={{ p: 1 }}>
+                        <Typography variant='subtitle1' sx={{ mb: 1 }}>
+                          {plant.name}
+                        </Typography>
+                        <Typography
+                          variant='body2'
+                          color='text.secondary'
+                          sx={{ mb: 1 }}
+                        >
+                          {plant.species}
+                        </Typography>
+                        {plant.description && (
+                          <Typography variant='body2'>
+                            {plant.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Popup>
+                  </Marker>
+                ))}
+
+              {/* Отображение областей */}
+              {layers.find((l) => l.id === 'areas')?.visible &&
+                areas.map((area) => (
+                  <Polygon
+                    key={area.id}
+                    positions={area.positions}
+                    pathOptions={{
+                      color: area.color,
+                      fillOpacity: 0.2,
+                    }}
+                  >
+                    <Popup>
+                      <Box sx={{ p: 1 }}>
+                        <Typography variant='subtitle1' sx={{ mb: 1 }}>
+                          {area.name}
+                        </Typography>
+                        <Chip label={area.type} size='small' sx={{ mb: 1 }} />
+                        {area.description && (
+                          <Typography variant='body2'>
+                            {area.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Popup>
+                  </Polygon>
+                ))}
+            </MapContainer>
+          )}
+        </Paper>
+      </Box>
+
+      {/* Диалоги для редактирования */}
       <Dialog open={showPlantDialog} onClose={() => setShowPlantDialog(false)}>
         <DialogTitle>
           {selectedPlant
@@ -779,7 +894,6 @@ const MapPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Диалог для добавления/редактирования области */}
       <Dialog open={showAreaDialog} onClose={() => setShowAreaDialog(false)}>
         <DialogTitle>
           {selectedArea ? 'Редактирование области' : 'Добавление новой области'}
@@ -835,6 +949,14 @@ const MapPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Уведомления */}
+      <Snackbar
+        open={!!notification}
+        autoHideDuration={3000}
+        onClose={() => setNotification(null)}
+        message={notification}
+      />
     </Container>
   );
 };
