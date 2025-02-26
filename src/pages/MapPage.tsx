@@ -170,6 +170,7 @@ const MapEventHandler: React.FC<MapEventHandlerProps> = ({
   onAreaPointAdd,
   onAreaSelect,
 }) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const map = useMapEvents({
     click: (e) => {
       if (mode === 'addPlant' && onPlantAdd) {
@@ -337,6 +338,7 @@ const MapPage: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const theme = useTheme();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Используем демо-изображение по умолчанию
